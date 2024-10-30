@@ -1,6 +1,6 @@
 use super::*;
 use core::num::NonZeroUsize;
-use alloy_primitives::{Address, Bloom, Bytes, FixedBytes, U256, U128};
+use ethereum_types::{H160, H256, U128, U256};
 use smallvec::SmallVec;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
@@ -409,7 +409,7 @@ impl Encode for NonZeroUsize {
     }
 }
 
-impl Encode for Address {
+impl Encode for H160 {
     fn is_ssz_fixed_len() -> bool {
         true
     }
@@ -423,83 +423,25 @@ impl Encode for Address {
     }
 
     fn ssz_append(&self, buf: &mut Vec<u8>) {
-        buf.extend_from_slice(self.as_slice());
+        buf.extend_from_slice(self.as_bytes());
     }
 }
 
-impl<const N: usize> Encode for FixedBytes<N> {
-    #[inline]
+impl Encode for H256 {
     fn is_ssz_fixed_len() -> bool {
         true
     }
 
-    #[inline]
-    fn ssz_bytes_len(&self) -> usize {
-        N
-    }
-
-    #[inline]
     fn ssz_fixed_len() -> usize {
-        N
+        32
     }
 
-    #[inline]
-    fn ssz_append(&self, buf: &mut Vec<u8>) {
-        buf.extend_from_slice(&self.0);
-    }
-
-    #[inline]
-    fn as_ssz_bytes(&self) -> Vec<u8> {
-        self.0.to_vec()
-    }
-}
-
-impl Encode for Bloom {
-    #[inline]
-    fn is_ssz_fixed_len() -> bool {
-        true
-    }
-
-    #[inline]
     fn ssz_bytes_len(&self) -> usize {
-        256
+        32
     }
 
-    #[inline]
-    fn ssz_fixed_len() -> usize {
-        256
-    }
-
-    #[inline]
     fn ssz_append(&self, buf: &mut Vec<u8>) {
-        buf.extend_from_slice(&self.0 .0);
-    }
-
-    #[inline]
-    fn as_ssz_bytes(&self) -> Vec<u8> {
-        self.0.to_vec()
-    }
-}
-
-impl Encode for Bytes {
-    #[inline]
-    fn is_ssz_fixed_len() -> bool {
-        false
-    }
-
-    #[inline]
-    fn ssz_bytes_len(&self) -> usize {
-        self.0.len()
-    }
-
-    #[inline]
-    fn ssz_append(&self, buf: &mut Vec<u8>) {
-        buf.extend_from_slice(&self.0);
-    }
-
-    #[inline]
-    fn as_ssz_bytes(&self) -> Vec<u8> {
-        self.0.to_vec()
+        buf.extend_from_slice(self.as_bytes());
     }
 }
 
@@ -517,7 +459,11 @@ impl Encode for U256 {
     }
 
     fn ssz_append(&self, buf: &mut Vec<u8>) {
-        buf.extend_from_slice(self.as_le_slice());
+        let n = <Self as Encode>::ssz_fixed_len();
+        let s = buf.len();
+
+        buf.resize(s + n, 0);
+        self.to_little_endian(&mut buf[s..]);
     }
 }
 
@@ -535,7 +481,11 @@ impl Encode for U128 {
     }
 
     fn ssz_append(&self, buf: &mut Vec<u8>) {
-        buf.extend_from_slice(self.as_le_slice());
+        let n = <Self as Encode>::ssz_fixed_len();
+        let s = buf.len();
+
+        buf.resize(s + n, 0);
+        self.to_little_endian(&mut buf[s..]);
     }
 }
 

@@ -14,13 +14,12 @@ categories = ["cryptography::cryptocurrencies"]
 name = "ssz"
 
 [dev-dependencies]
-ethereum_ssz_derive = { path = "../ssz_derive" }
+ethereum_ssz_derive = { git = "https://github.com/ncitron/ethereum_ssz", branch = "stable-container" }
 
 [dependencies]
 ethereum-types = "0.14.1"
 smallvec = { version = "1.6.1", features = ["const_generics"] }
 itertools = "0.10.3"
-alloy-primitives = { version = "0.7.7", features = ["getrandom"] }
 
 [features]
 arbitrary = ["ethereum-types/arbitrary"]
